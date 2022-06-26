@@ -9,11 +9,20 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/asgi/
 
 import os
 
-from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter
+import django
+from channels.http import AsgiHandler
+from channels.routing import ProtocolTypeRouter, URLRouter
+
+from apps.message import routing as message_routing
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'deer_block_message.settings')
+django.setup()
 
 application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
+    "http": AsgiHandler(),
+    "websocket": URLRouter(
+        # 不再设置权限，所有连接都允许
+        # 但是用户连接只允许只读，而且会查看用户的信息
+        message_routing.websocket_urlpatterns,
+    ),
 })

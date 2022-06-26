@@ -9,12 +9,11 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -25,8 +24,7 @@ SECRET_KEY = 'django-insecure-3+uz_m)b(n=vv@q86uv_%z^=9$(om+wg7e-=ttg=6yu_75(l4e
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -38,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.message.apps.MessageConfig'
 ]
 
 MIDDLEWARE = [
@@ -71,11 +70,12 @@ TEMPLATES = [
 # WSGI_APPLICATION = 'deer_block_message.wsgi.application'
 
 ASGI_APPLICATION = 'deer_block_message.asgi.application'
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [('127.0.0.1', 16379)],
         },
     },
 }
@@ -85,11 +85,41 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get("POSTGRES_NAME", 'deer_block'),
+        'USER': os.environ.get("POSTGRES_USER", 'postgres'),
+        'PASSWORD': os.environ.get("POSTGRES_PASSWORD", '123456'),
+        'HOST': os.environ.get("POSTGRES_HOST", 'localhost'),
+        'PORT': os.environ.get("POSTGRES_PORT", '15432'),
+    },
+    'mongo': {
+        'ENGINE': 'djongo',
+        'NAME': 'your-db-name',
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': os.environ.get("MONGO_HOST", 'localhost'),
+            'port': os.environ.get("MONGO_PORT", '27017'),
+            'username': os.environ.get("MONGO_USERNAME", 'deer_block'),
+            'password': os.environ.get("MONGO_PASSWORD", 'deer_block'),
+            'authSource': os.environ.get("MONGO_SOURCE", 'deer_block_message'),
+            'authMechanism': 'SCRAM-SHA-1'
+        },
+        'LOGGING': {
+            'version': 1,
+            'loggers': {
+                'djongo': {
+                    'level': 'DEBUG',
+                    'propagate': False,
+                }
+            },
+        },
     }
 }
-
+DATABASE_ROUTERS = ['deer_block_message.db_router.DatabaseAppsRouter']
+DATABASE_APPS_MAPPING = {
+    'apps.users': 'default',
+    'apps.message': 'mongo',
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -109,7 +139,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -123,7 +152,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -133,3 +161,69 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+BASE_LOG_DIR = os.path.join(BASE_DIR, "logs")
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': '[%(asctime)s][%(threadName)s:%(thread)d][task_id:%(name)s][%(filename)s:%(lineno)d]'
+                      '[%(levelname)s][%(message)s]'
+        },
+        'simple': {
+            'format': '[%(levelname)s][%(asctime)s][%(filename)s:%(lineno)d]%(message)s'
+        },
+        'collect': {
+            'format': '%(message)s'
+        }
+    },
+    'filters': {
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            # 'filters': ['require_debug_true'],  # 只有在Django debug为True时才在屏幕打印日志
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'info': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，根据文件大小自动切
+            'filename': os.path.join(BASE_LOG_DIR, "fs_info.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 50,  # 日志大小 50M
+            'backupCount': 10,  # 备份数为3  xx.log --> xx.log.1 --> xx.log.2 --> xx.log.3
+            'formatter': 'standard',
+            'encoding': 'utf-8',
+        },
+        'error': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',  # 保存到文件，自动切
+            'filename': os.path.join(BASE_LOG_DIR, "fs_err.log"),  # 日志文件
+            'maxBytes': 1024 * 1024 * 5,  # 日志大小 50M
+            'backupCount': 5,
+            'formatter': 'standard',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'django': {  # 默认的logger应用如下配置
+            'handlers': ['info', 'console', 'error'],  # 上线之后可以把'console'移除
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.request': {
+            'handlers': ['info', 'console'],
+            'level': 'INFO',
+            'propagate': False  # 是否向上一级logger实例传递日志信息
+        },
+        'django.test': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False
+        },
+    },
+}

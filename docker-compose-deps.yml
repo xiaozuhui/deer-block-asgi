@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: deer_block_mongo
+    command: [ --auth ]
+    environment:
+      TZ: Asia/Shanghai
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: deer_block_message
+    restart: always
+    volumes:
+      - /var/data/mongo/data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - 27017:27017
