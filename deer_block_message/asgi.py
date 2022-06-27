@@ -13,10 +13,11 @@ import django
 from channels.http import AsgiHandler
 from channels.routing import ProtocolTypeRouter, URLRouter
 
-from apps.message import routing as message_routing
-
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'deer_block_message.settings')
 django.setup()
+
+# Tips 导入INSTALLED_APP中的app时之前，不能在django.setup()之前加载
+from apps.message import routing as message_routing
 
 application = ProtocolTypeRouter({
     "http": AsgiHandler(),

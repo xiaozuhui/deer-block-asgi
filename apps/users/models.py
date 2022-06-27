@@ -1,34 +1,51 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from apps.users import custom_manager
 
-
-class BaseModel(custom_manager.LogicDeleteModel):
+class User(models.Model):
     """
-    基础模型，继承django的模型和逻辑删除主模型
+    只需要user中的少部分信息即可
+    都是可读状态
     """
-    created_at = models.DateTimeField(
-        verbose_name="数据创建时间", auto_now=True, null=True)
-    updated_at = models.DateTimeField(
-        verbose_name="数据更新时间", auto_now_add=True, null=True)
-    deleted_at = models.DateTimeField(
-        verbose_name="数据失效时间", null=True, blank=True)
-
-    class Meta:
-        abstract = True
-
-
-class User(AbstractUser, BaseModel):
-    """
-    自定义用户信息, 使用基本user, 加入手机号即可
-    """
+    username = models.CharField(max_length=50, verbose_name="用户名")
     phone_number = models.CharField(
         max_length=14, verbose_name="手机号", unique=True)
+    is_delete = models.BooleanField()
 
     class Meta:
         managed = False
         db_table = 'user'
         verbose_name = '用户'
         verbose_name_plural = verbose_name
-        ordering = ['id']
+
+
+class UserProfile(models.Model):
+    """
+    用户概述
+    """
+    user = models.OneToOneField(User,
+                                verbose_name="用户",
+                                db_constraint=False,
+                                on_delete=models.CASCADE,
+                                related_name="profile_user")
+    gender = models.CharField(max_length=20, verbose_name="性别")
+    birthday = models.DateField(null=True, blank=True, verbose_name='生日')
+    city = models.CharField(max_length=50, blank=True,
+                            null=True, verbose_name="城市")
+    address = models.CharField(
+        max_length=215, blank=True, null=True, verbose_name="地址")
+
+    # 关注与被关注
+    follow = models.ManyToManyField(
+        User, related_name="user_follow", verbose_name='关注', blank=True)
+    followed = models.ManyToManyField(
+        User, related_name="user_followed", verbose_name='被关注', blank=True)
+
+    ip = models.GenericIPAddressField(
+        verbose_name="注册时ip地址", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "个人信息"
+        verbose_name_plural = verbose_name
+        db_table = "user_profile"
+        managed = False
+
