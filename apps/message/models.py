@@ -36,3 +36,22 @@ class Message(models.Model):
     class Meta:
         verbose_name = "消息"
         verbose_name_plural = verbose_name
+
+
+class GroupEntity(models.Model):
+    group_name = models.CharField(max_length=225, verbose_name="组名称")
+
+    class Meta:
+        abstract = True
+
+
+class WebsocketLog(models.Model):
+    """
+    连接记录
+    """
+    objects = models.DjongoManager()
+    _id = models.ObjectIdField()
+    user = models.EmbeddedField(model_container=UserEntity)
+    connect_time = models.DateTimeField()
+    disconnect_time = models.DateTimeField()
+    groups = models.ArrayField(model_container=GroupEntity, null=True, blank=True)

@@ -39,7 +39,6 @@ class NewIssuesMessages(AsyncWebsocketConsumer):
             # 是wsgi系统请求的，目标在于给所有符合需求的用户发送消息
             self.group_name = "Group_{username}_{phone_number}".format(username=user.username,
                                                                        phone_number=user.phone_number)
-            print(self.group_name)
             await self.channel_layer.group_add(
                 self.group_name,
                 self.channel_name
@@ -51,7 +50,6 @@ class NewIssuesMessages(AsyncWebsocketConsumer):
                 # "我"关注的用户，他们发布消息我需要接收到
                 gn = "Group_{username}_{phone_number}".format(username=follower.username,
                                                               phone_number=follower.phone_number)
-                print(gn)
                 self.group_names.append(gn)
                 await self.channel_layer.group_add(
                     gn,
