@@ -16,6 +16,7 @@ from apps.message.consumers import issues
 websocket_urlpatterns = [
     # 针对个人的通知，主要是系统通知
     # 以及会加入各个不同的组中
-    re_path(r'ws/system/notice/(?P<user_id>\w+)/$', issues.NewIssuesMessages.as_asgi()),  # 系统连接，这里的user_id即是消息的源
-    re_path(r'ws/notice/(?P<user_id>\w+)/$', issues.NewIssuesMessages.as_asgi()),  # 用户连接，这里携带的user_id即是用户自己的user_id
+    re_path(r'ws/system/issues/(?P<user_id>\w+)/$', issues.NewIssuesMessages.as_asgi()),  # 系统连接，这里的user_id即是消息的源
+    re_path(r'ws/notice/(?P<user_id>\w+)/$', issues.NoticeMessage.as_asgi()),  # 用户连接，这里携带的user_id即是用户自己的user_id
+    re_path(r'ws/system/comment/(?P<user_id>\w+)/$', issues.CommentIssuesMessage.as_asgi()),
 ]

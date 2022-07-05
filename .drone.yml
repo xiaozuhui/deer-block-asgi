@@ -1,0 +1,28 @@
+---
+kind: pipeline
+type: docker
+name: 镜像打包
+
+steps:
+  - name: build
+    image: plugins/docker
+    settings:
+      repo: 101.35.246.34/deer_block/deer-block-message
+      registry: 101.35.246.34
+      insecure: true
+      use_cache: true
+      username: xiaozuhui
+      password: 1qazXDR%
+      tags: ${DRONE_TAG=latest}
+      when:
+        event: [ push, tag, deployment ]
+        branch: master
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
+    - tag
+    - deployment
+    - pull_request

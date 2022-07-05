@@ -76,7 +76,8 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 16379)],
+            "hosts": ["redis://{}:{}/0".format(os.environ.get("CACHE_LOCATION_IP", '127.0.0.1'),
+                                             os.environ.get("CACHE_LOCATION_PORT", '16379'))],
         },
     },
 }
@@ -93,33 +94,6 @@ DATABASES = {
         'HOST': os.environ.get("POSTGRES_HOST", 'localhost'),
         'PORT': os.environ.get("POSTGRES_PORT", '15432'),
     },
-    'mongo': {
-        'ENGINE': 'djongo',
-        'NAME': 'your-db-name',
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': os.environ.get("MONGO_HOST", 'localhost'),
-            'port': os.environ.get("MONGO_PORT", '27017'),
-            'username': os.environ.get("MONGO_USERNAME", 'deer_block'),
-            'password': os.environ.get("MONGO_PASSWORD", 'deer_block'),
-            'authSource': os.environ.get("MONGO_SOURCE", 'deer_block_message'),
-            'authMechanism': 'SCRAM-SHA-1'
-        },
-        'LOGGING': {
-            'version': 1,
-            'loggers': {
-                'djongo': {
-                    'level': 'DEBUG',
-                    'propagate': False,
-                }
-            },
-        },
-    }
-}
-DATABASE_ROUTERS = ['deer_block_message.db_router.DatabaseAppsRouter']
-DATABASE_APPS_MAPPING = {
-    'apps.users': 'default',
-    'apps.message': 'mongo',
 }
 
 # Password validation
