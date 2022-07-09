@@ -24,7 +24,6 @@ class NewIssuesMessages(AsyncModelConsumer):
         """
         连接websocket
         """
-        raw_path = self.scope['path']  # 获取到请求地址
         user_id = self.scope.get("url_route", {}).get("kwargs", {}).get("user_id", None)
         if not user_id:
             await self.close()
@@ -37,6 +36,8 @@ class NewIssuesMessages(AsyncModelConsumer):
             self.group_name,
             self.channel_name
         )
+        # 保存对应的group
+        await self.save_group(self.group_name, [user_id])
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -83,6 +84,13 @@ class NewIssuesMessages(AsyncModelConsumer):
                 'message': message
             }
         )
-
-
-
+        # 发送消息后，应该保存所有对象的消息
+        user_id = text_data_json.get("from_user", {}).get("user_id", None)
+        if not user_id:
+            return
+        followers = await self.get_followed(user_id)
+        for follower in followers:
+            await self.save_message(from_user_id=user_id,
+                                    to_user_id=follower.id,
+                                    message_content=message,
+                                    source_type="issues")

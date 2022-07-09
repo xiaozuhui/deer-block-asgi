@@ -26,3 +26,38 @@ trigger:
     - tag
     - deployment
     - pull_request
+
+---
+kind: pipeline
+type: docker
+name: 镜像部署
+
+depends_on: # 依赖build管道
+  - 镜像打包
+
+clone:
+  disable: true # 禁用拉取
+
+steps:
+  - name: deploy
+    image: appleboy/drone-ssh
+    settings:
+      host: 101.35.246.34
+      user: ubuntu
+      password: Shiki921128?
+      port: 22
+      command_timeout: 10m
+      script:
+        - echo ====开始部署=======
+        - docker pull 101.35.246.34/deer_block/deer-block-server:latest
+        - docker-compose -f /etc/docker-compose/deer_block_server/docker-compose.yml up -d
+        - echo ====部署成功=======
+
+trigger:
+  branch:
+    - master
+  event:
+    - push
+    - tag
+    - deployment
+    - pull_request
