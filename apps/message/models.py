@@ -2,6 +2,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 from apps.base_model import BaseModel
+from apps.const import SOURCE_TYPE
 from apps.users.models import User
 
 
@@ -10,14 +11,6 @@ class Message(BaseModel):
     通知
     所有的通知将使用这个模型
     """
-    SOURCE_TYPE = (
-        ("issues", "动态消息"),
-        ("user", "用户私信"),
-        ("shop", "商城消息"),
-        ("system", "系统消息")
-    )
-
-    # 消息源
     source_type = models.CharField(choices=SOURCE_TYPE, verbose_name="消息源", max_length=10)
     message_content = JSONField(verbose_name="消息内容", blank=True, null=True)
     # 消息是从哪个用户来的，默认系统用户将固定为system

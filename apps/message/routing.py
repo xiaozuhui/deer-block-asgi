@@ -14,10 +14,10 @@ from django.urls import re_path
 from apps.message.consumers import issues_message, user_notice, comment_message
 
 websocket_urlpatterns = [
-    # 系统连接，这里的user_id即是消息的源
+    # 系统连接，这里的user_id即是消息的源，即当前用户
     re_path(r'ws/system/issues/(?P<user_id>\w+)/$', issues_message.NewIssuesMessages.as_asgi()),
     # 用户连接，这里携带的user_id即是用户自己的user_id
     re_path(r'ws/notice/(?P<user_id>\w+)/$', user_notice.NoticeMessage.as_asgi()),
-    # 评论通知
+    # 评论通知，这里的user_id不是连接当前用户，而是目标用户
     re_path(r'ws/system/comment/(?P<user_id>\w+)/$', comment_message.CommentIssuesMessage.as_asgi()),
 ]

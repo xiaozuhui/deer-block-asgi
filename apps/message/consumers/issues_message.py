@@ -2,12 +2,13 @@ import datetime
 import json
 import logging
 
-from apps.message.consumers.async_model_cunsumer import AsyncModelConsumer
+from apps import const
+from apps.message.consumers.async_model_cunsumer import MessageConsumer
 
 logger = logging.getLogger('django')
 
 
-class NewIssuesMessages(AsyncModelConsumer):
+class NewIssuesMessages(MessageConsumer):
     """新动态的消息
     主要有以下集中通知范围
 
@@ -15,10 +16,6 @@ class NewIssuesMessages(AsyncModelConsumer):
     2、登录用户为主的通知
     3、系统登录
     """
-
-    def __init__(self, *args, **kwargs):
-        self.group_name = ""
-        super().__init__(*args, **kwargs)
 
     async def connect(self):
         """
@@ -39,16 +36,6 @@ class NewIssuesMessages(AsyncModelConsumer):
         # 保存对应的group
         await self.save_group(self.group_name, [user_id])
         await self.accept()
-
-    async def disconnect(self, close_code):
-        """
-        断开连接
-        """
-        raw_path = self.scope['path']
-        await self.channel_layer.group_discard(
-            self.group_name,
-            self.channel_name
-        )
 
     async def receive(self, text_data=None, bytes_data=None):
         # TODO 系统使用group_name，但是用户连接不能使用self.group_name
@@ -75,6 +62,7 @@ class NewIssuesMessages(AsyncModelConsumer):
             "issues_title": text_data_json.get("issues_title", ""),  # 动态的标题
             "content": text_data_json.get("content", "..."),  # 动态的精简内容
             "issues_url": text_data_json.get("issues_url", ""),  # 对应的issues链接
+            "source_type": "issues",
         }
         message_type = text_data_json.get("callback", "system_message")
         await self.channel_layer.group_send(
@@ -89,8 +77,28 @@ class NewIssuesMessages(AsyncModelConsumer):
         if not user_id:
             return
         followers = await self.get_followed(user_id)
+        need_save_msg = []
         for follower in followers:
-            await self.save_message(from_user_id=user_id,
-                                    to_user_id=follower.id,
-                                    message_content=message,
-                                    source_type="issues")
+            need_save_msg.append({
+                "from_user_id": user_id,
+                "to_user_id": follower.id,
+                "message_content": message,
+                "source_type": const.ISSUES,
+            })
+            # await self.save_message(from_user_id=user_id,
+            #                         to_user_id=follower.id,
+            #                         message_content=message,
+            #                         source_type=const.ISSUES)
+        await self.save_many_message(need_save_msg)
+
+    async def check_message(self, data: dict) -> (dict, str):
+        pass
+
+    async def disconnect(self, close_code):
+        """
+        断开连接
+        """
+        await self.channel_layer.group_discard(
+            self.group_name,
+            self.channel_name
+        )
