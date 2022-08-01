@@ -98,8 +98,8 @@ class AsyncModelConsumer(AsyncWebsocketConsumer):
         for d in data:
             from_user_id = d.get("from_user_id", None)
             to_user_id = d.get("to_user_id", None)
-            from_user = from_user_map.get("from_user_id", None)
-            to_user = to_user_map.get("to_user_id", None)
+            from_user = from_user_map.get(from_user_id, None)
+            to_user = to_user_map.get(to_user_id, None)
 
             if not from_user or not to_user:
                 logger.error("发送端用户{}或接受端用户{}查不到".format(from_user_id, to_user_id))

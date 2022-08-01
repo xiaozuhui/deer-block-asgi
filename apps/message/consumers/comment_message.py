@@ -29,8 +29,6 @@ class CommentIssuesMessage(MessageConsumer):
             self.self_group_name,
             self.channel_name
         )
-        # 保存对应的group
-        await self.save_group(self.self_group_name, [user_id])
         await self.accept()
 
     async def receive(self, text_data=None, bytes_data=None):
