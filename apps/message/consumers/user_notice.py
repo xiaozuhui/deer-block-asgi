@@ -28,8 +28,7 @@ class NoticeMessage(AsyncModelConsumer):
         # 加入到我所关注的人的group中
         follower_list = await self.get_user_followers(user_id)
         for follower in follower_list:
-            gn = "Group_{username}_{phone_number}".format(username=follower.username,
-                                                          phone_number=follower.phone_number)
+            gn = f"Group_{follower.user_code}_{follower.phone_number}"
             self.group_names.append(gn)
             await self.channel_layer.group_add(
                 gn,
@@ -37,8 +36,7 @@ class NoticeMessage(AsyncModelConsumer):
             )
             await self.save_group(gn, [user_id])
         # 并且加入到我自己的group中去
-        group_name = "Group_Self_{username}_{phone_number}".format(username=c_user.username,
-                                                                   phone_number=c_user.phone_number)
+        group_name = f"Group_Self_{c_user.user_code}_{c_user.phone_number}"
         self.self_group_name = group_name
         await self.channel_layer.group_add(
             group_name,

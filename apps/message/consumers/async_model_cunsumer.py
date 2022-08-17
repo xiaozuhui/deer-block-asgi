@@ -133,6 +133,7 @@ class MessageConsumer(AsyncModelConsumer):
     async def connect(self):
         """
         连接websocket
+        username可能是中文，而group_name必须是acsii
         """
         user_id = self.scope.get("url_route", {}).get("kwargs", {}).get("user_id", None)
         if not user_id:
@@ -140,10 +141,8 @@ class MessageConsumer(AsyncModelConsumer):
         user = await self.get_user(user_id)
         if not user:
             await self.close()
-        self.group_name = "Group_{username}_{phone_number}".format(username=user.username,
-                                                                   phone_number=user.phone_number)
-        self.self_group_name = "Group_Self_{username}_{phone_number}".format(username=user.username,
-                                                                             phone_number=user.phone_number)
+        self.group_name = f"Group_{user.user_code}_{user.phone_number}"
+        self.self_group_name = f"Group_Self_{user.user_code}_{user.phone_number}"
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name

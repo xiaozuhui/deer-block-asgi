@@ -22,8 +22,7 @@ class ThumbUpMessage(MessageConsumer):
         if not user:
             logger.error("user_id={}的用户不存在".format(user_id))
             await self.close()
-        self.self_group_name = "Group_Self_{username}_{phone_number}".format(username=user.username,
-                                                                             phone_number=user.phone_number)
+        self.self_group_name = f"Group_Self_{user.user_code}_{user.phone_number}"
         await self.channel_layer.group_add(
             self.self_group_name,
             self.channel_name
