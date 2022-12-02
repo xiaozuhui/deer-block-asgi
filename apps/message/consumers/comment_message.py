@@ -23,14 +23,11 @@ class CommentIssuesMessage(MessageConsumer):
         user = await self.get_user(user_id)
         if not user:
             await self.close()
-        self.self_group_name = "Group_Self_{username}_{phone_number}".format(username=user.username,
-                                                                             phone_number=user.phone_number)
+        self.self_group_name = f"Group_Self_{user.user_code}_{user.phone_number}"
         await self.channel_layer.group_add(
             self.self_group_name,
             self.channel_name
         )
-        # 保存对应的group
-        await self.save_group(self.self_group_name, [user_id])
         await self.accept()
 
     async def receive(self, text_data=None, bytes_data=None):

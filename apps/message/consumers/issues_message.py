@@ -27,8 +27,7 @@ class NewIssuesMessages(MessageConsumer):
         user = await self.get_user(user_id)
         if not user:
             await self.close()
-        self.group_name = "Group_{username}_{phone_number}".format(username=user.username,
-                                                                   phone_number=user.phone_number)
+        self.group_name = f"Group_{user.user_code}_{user.phone_number}"
         await self.channel_layer.group_add(
             self.group_name,
             self.channel_name

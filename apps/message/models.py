@@ -15,7 +15,7 @@ class Message(BaseModel):
     message_content = JSONField(verbose_name="消息内容", blank=True, null=True)
     # 消息是从哪个用户来的，默认系统用户将固定为system
     from_user = models.ForeignKey(User, related_name="from_user", on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, related_name="to_user", on_delete=models.SET_NULL, null=True)  # 消息接受者
+    to_user = models.ForeignKey(User, related_name="to_user", on_delete=models.DO_NOTHING)  # 消息接受者
     has_consumed = models.BooleanField(verbose_name="是否已被消费", default=False)
 
     class Meta:

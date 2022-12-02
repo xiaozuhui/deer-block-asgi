@@ -7,8 +7,8 @@ class User(models.Model):
     都是可读状态
     """
     username = models.CharField(max_length=50, verbose_name="用户名")
-    phone_number = models.CharField(
-        max_length=14, verbose_name="手机号", unique=True)
+    phone_number = models.CharField(max_length=14, verbose_name="手机号", unique=True)
+    user_code = models.CharField(max_length=20, verbose_name="用户编码", unique=True)
     is_delete = models.BooleanField()
 
     class Meta:
@@ -48,4 +48,3 @@ class UserProfile(models.Model):
         verbose_name_plural = verbose_name
         db_table = "user_profile"
         managed = False
-
