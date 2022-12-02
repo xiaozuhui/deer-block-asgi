@@ -1,4 +1,13 @@
+<!--
+ * @Author: xiaozuhui
+ * @Date: 2022-12-02 10:28:52
+ * @LastEditors: xiaozuhui
+ * @LastEditTime: 2022-12-02 10:30:23
+ * @Description: 
+-->
 # deer-block-asgi
+
+跟随 `https://github.com/xiaozuhui/deer-block-server`公开
 
 ## 介绍
 asgi服务

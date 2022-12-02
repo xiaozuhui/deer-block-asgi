@@ -7,12 +7,12 @@ steps:
   - name: build
     image: plugins/docker
     settings:
-      repo: 101.35.246.34/deer_block/deer-block-message
-      registry: 101.35.246.34
+      repo: deer_block/deer-block-message
+      registry: 
       insecure: true
       use_cache: true
-      username: xiaozuhui
-      password: 1qazXDR%
+      username: 
+      password:
       tags: ${DRONE_TAG=latest}
       when:
         event: [ push, tag, deployment ]
@@ -42,14 +42,14 @@ steps:
   - name: deploy
     image: appleboy/drone-ssh
     settings:
-      host: 101.35.246.34
-      user: ubuntu
-      password: Shiki921128?
+      host: 
+      user: 
+      password: 
       port: 22
       command_timeout: 10m
       script:
         - echo ====开始部署=======
-        - docker pull 101.35.246.34/deer_block/deer-block-message:latest
+        - docker pull deer_block/deer-block-message:latest
         - docker-compose -f /etc/docker-compose/deer_block_server/docker-compose.yml up -d
         - echo ====部署成功=======
 
